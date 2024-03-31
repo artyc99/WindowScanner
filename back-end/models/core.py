@@ -7,5 +7,3 @@ from . import ConfigI
 class Config(ConfigI):
     host: str
     port: int
-
-    secret_key: str

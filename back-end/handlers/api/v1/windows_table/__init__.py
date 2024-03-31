@@ -14,10 +14,16 @@ def get_windows_table():
     return '!'
 
 
-@WINDOWS_TABLE.route(rule='/calculate', methods=['POST'])
+@WINDOWS_TABLE.route(rule='/calculate', methods=['POST', 'OPTIONS'])
 def calculate():
     try:
-        data = request.json()
+        if request.method == 'OPTIONS':
+            return Response(
+                response='',
+                mimetype='application/json'
+            )
+
+        data = request.json
 
         if 'rooms_per_level' not in data.keys():
             return Response(
@@ -52,6 +58,6 @@ def calculate():
 
     except Exception as ex:
         return Response(
-            response=f'{"error": "{ex}"}',
+            response=json.dumps({'error': ex}),
             mimetype='application/json'
         )
