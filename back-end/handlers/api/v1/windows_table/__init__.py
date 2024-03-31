@@ -43,6 +43,8 @@ def calculate():
                 mimetype='application/json'
             )
 
+        print(data)
+
         res = get_rooms_numbers(
             GetRoomsNumbersReq(
                 rooms_per_level=data['rooms_per_level'],
@@ -50,14 +52,15 @@ def calculate():
                 rooms_state=data['rooms_state'],
             )
         )
+        print(res)
 
         return Response(
             response=json.dumps(asdict(res)),
             mimetype='application/json'
         )
 
-    except Exception as ex:
+    except Exception as _:
         return Response(
-            response=json.dumps({'error': ex}),
+            response=json.dumps({'error': 'Ошибка обработки'}),
             mimetype='application/json'
         )

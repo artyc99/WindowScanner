@@ -1,11 +1,12 @@
 from typing import Union
 
+from models import Base
 from modules.windows_calculator.calculate_schema import GetRoomsNumbersReq, GetRoomsNumbersRes
 
 
-def get_rooms_numbers(req: GetRoomsNumbersReq) -> Union[GetRoomsNumbersRes, None]:
+def get_rooms_numbers(req: GetRoomsNumbersReq) -> Union[GetRoomsNumbersRes, Base]:
     if sum(req.rooms_per_level) != len(req.rooms_state[0]):
-        return None
+        return Base()
 
     active_rooms = []
     rooms_counter = 0

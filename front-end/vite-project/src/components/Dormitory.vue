@@ -8,14 +8,14 @@
         <div class="dormitories">
             <div class="dormitory">
                 <div class="level" v-for="level_index in levels_count">
-                    <div class="level-index">{{level_index}}</div>
                     <div class="window-selector" v-for="room_index in rooms_per_level" @click="active($event)">
-                        {{ room_index }}
+                        {{ get_room_number(level_index, room_index) }}
                     </div>
                 </div>
             </div>
         </div>
         <button @click="show($event)">Показать</button>
+        <button @click="calculate($event)">Расчитать</button>
     </div>
     <div class="windows-table">
         <div class="dates">
@@ -151,6 +151,23 @@ const levels_count = ref(0);
 const rooms_per_level = ref(0);
 const rooms = ref([]);
 
+const room_number = ref(0);
+
+const calc_result = ref({});
+
+const get_room_number = (level, number) => {
+    let buf = rooms_per_level * (level - 1);
+    let counter = 0;
+    for (let item in rooms.value) {
+        if (buf + item <= number) {
+            return rooms.value.length * (level - 1) + counter;
+        } else {
+            counter = counter + 1;
+            buf = buf + item;
+        }
+    }
+};
+
 const show = (event) => {
 
     const levels_count_buf = document.querySelector('.levels-count');
@@ -175,7 +192,27 @@ const active = (event) => {
     }
 }
 
-const test = (event) => {
+const calculate = (event) => {
+
+    let counter = 0;
+    let buf_counter = 0;
+    let levels_data_buf = [];
+    let levels_data = [];
+
+    const levels = event.currentTarget.parentElement.querySelectorAll('.window-selector').forEach(
+        (item) => {
+            if (counter === rooms_per_level.value - 1) {
+                levels_data_buf[counter] = Boolean(item.classList.contains('active'));
+                levels_data[buf_counter] = levels_data_buf;
+                levels_data_buf = [];
+                buf_counter = buf_counter + 1;
+                counter = 0;
+            } else {
+                levels_data_buf[counter] = Boolean(item.classList.contains('active'));
+                counter = counter + 1;
+            }
+        }
+    )
 
     const req = fetch('http://localhost:5000/api/v1/windows-table/calculate', {
         method: 'POST',
@@ -185,8 +222,9 @@ const test = (event) => {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({"text": "", "type": ""})
-    }).then((res) => console.log(res))
+        body: JSON.stringify({"rooms_per_level": rooms.value, "level_count": levels_count.value, "rooms_state": levels_data})
+    }).then((res) => calc_result.value=res.json()).
+        then(() => console.log(calc_result.value))
         .catch((ex) => console.log(ex))
 };
 </script>
