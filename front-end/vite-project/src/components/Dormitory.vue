@@ -7,11 +7,19 @@
         </div>
         <div class="dormitories">
             <div class="dormitory">
-                <div class="level" v-for="level_index in levels_count">
-                    <div class="window-selector" v-for="room_index in rooms_per_level" @click="active($event)">
-                        {{ get_room_number(level_index, room_index) }}
+                <div class="level" v-for="level_data in room_number">
+                    <div class="window-selector" v-for="room_n in level_data" @click="active($event)">
+                        {{ room_n }}
                     </div>
                 </div>
+            </div>
+        </div>
+        <div class="result">
+            <div class="rooms">
+                Комнаты: {{rooms_result}}
+            </div>
+            <div class="count">
+                Количесво: {{rooms_count_result}}
             </div>
         </div>
         <button @click="show($event)">Показать</button>
@@ -151,36 +159,45 @@ const levels_count = ref(0);
 const rooms_per_level = ref(0);
 const rooms = ref([]);
 
-const room_number = ref(0);
+const room_number = ref([]);
 
-const calc_result = ref({});
-
-const get_room_number = (level, number) => {
-    let buf = rooms_per_level * (level - 1);
-    let counter = 0;
-    for (let item in rooms.value) {
-        if (buf + item <= number) {
-            return rooms.value.length * (level - 1) + counter;
-        } else {
-            counter = counter + 1;
-            buf = buf + item;
-        }
-    }
-};
+const rooms_result = ref([]);
+const rooms_count_result = ref(0);
 
 const show = (event) => {
+    let rooms_b = [];
+    let room_per_level_b = 0;
+    let levels_count_b = 0;
 
     const levels_count_buf = document.querySelector('.levels-count');
     const rooms_per_level_buf = document.querySelector('.rooms-per-level');
     const rooms_buf = document.querySelector('.rooms');
     if (levels_count_buf) {
-        levels_count.value = Number(levels_count_buf.value);
+        levels_count_b = Number(levels_count_buf.value);
+        levels_count.value = levels_count_b;
     }
     if (rooms_per_level_buf) {
-        rooms_per_level.value = Number(rooms_per_level_buf.value);
+        room_per_level_b = Number(rooms_per_level_buf.value);
+        rooms_per_level.value = room_per_level_b;
     }
     if (rooms_buf) {
-        rooms.value = rooms_buf.value.split(',').map(Number)
+        rooms_b = rooms_buf.value.split(',').map(Number);
+        rooms.value = rooms_b;
+    }
+
+    let room_numb = 1;
+    for (let level_index of Array(levels_count_b).keys()) {
+        let rooms_buf = [];
+        let counter = 0;
+        for (let value in rooms_b) {
+            for (let index of Array(rooms_b[value]).keys()) {
+                rooms_buf[counter] = room_numb;
+                counter = counter + 1;
+            }
+            room_numb = room_numb + 1;
+            console.log(value);
+        }
+        room_number.value[level_index] = rooms_buf;
     }
 };
 
@@ -223,9 +240,12 @@ const calculate = (event) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({"rooms_per_level": rooms.value, "level_count": levels_count.value, "rooms_state": levels_data})
-    }).then((res) => calc_result.value=res.json()).
-        then(() => console.log(calc_result.value))
-        .catch((ex) => console.log(ex))
+    }).then((res) => {
+        let buf = res.json();
+        rooms_result.value = buf.rooms;
+        rooms_count_result.value = buf.rooms_count;
+    })
+        .catch((ex) => console.log(ex));
 };
 </script>
 
